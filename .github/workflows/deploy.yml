@@ -1,0 +1,48 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest flake8 bandit coverage
+
+      - name: Run tests
+        run: pytest
+
+      - name: Run linting with flake8
+        run: flake8 discriminant.py test_discriminant.py --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Check test coverage
+        run: |
+          coverage run -m pytest
+          coverage report --fail-under=80
+
+      - name: Run security check with bandit
+        run: bandit -r . -f json -o bandit-report.json || true
+
+      - name: Send Telegram notification
+        run: |
+          STATUS=$([ $? -eq 0 ] && echo "успешно" || echo "с ошибкой")
+          MESSAGE="Пайплайн завершен $STATUS. Репозиторий: ${{ github.repository }}. Коммит: ${{ github.sha }}."
+          curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+            -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+            -d text="$MESSAGE"
+        if: always()
