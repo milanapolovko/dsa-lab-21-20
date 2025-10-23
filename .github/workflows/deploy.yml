@@ -22,7 +22,6 @@ jobs:
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token1: ${{ secrets.GH_PAT }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GH_PAT }}
           publish_dir: ./
           destination_dir: v${{ github.event.release.tag_name }}  # Публикует в подпапку по названию релиза, например v1.0
