@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Вход{% endblock %}
+
+{% block style %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+{% endblock %}
+
+{% block main %}
+    <div class="login-container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="logout-message">{{ messages[0] }}</div>
+            {% endif %}
+        {% endwith %}
+
+        <h2>Вход в систему</h2>
+        <form method="POST" novalidate action="{{ url_for('login') }}">
+            <label for="email">Email:</label><br>
+            <input type="text" id="email" name="email" value="{{ email }}" autocomplete="off"><br>
+            {% if errors.get('email') %}
+                <div class="error">{{ errors['email'] }}</div>
+            {% endif %}
+            <br>
+            
+            <label for="password">Пароль:</label><br>
+            <input type="password" id="password" name="password" autocomplete="off"><br>
+            {% if errors.get('password') %}
+                <div class="error">{{ errors['password'] }}</div>
+            {% endif %}
+            <br>
+            
+            <button type="submit">Вход</button>
+        </form>
+        
+        <p>Нет аккаунта? <a href="{{ url_for('signup') }}">Зарегистрироваться</a></p>
+    </div>
+{% endblock %}

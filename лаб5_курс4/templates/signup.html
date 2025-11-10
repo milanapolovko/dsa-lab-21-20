@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block style %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
+{% endblock %}
+
+{% block main %}
+    <div class="login-container">
+        <h2>Регистрация</h2>
+        <form method="POST" novalidate action="{{ url_for('signup') }}">
+            <label for="name">Имя:</label><br>
+            <input type="text" id="name" name="name" value="{{ name }}" autocomplete="off"><br>
+            {% if errors.get('name') %}
+                <div class="error">{{ errors['name'] }}</div>
+            {% endif %}
+            <br>
+            
+            <label for="email">Email:</label><br>
+            <input type="text" id="email" name="email" value="{{ email }}" autocomplete="off"><br>
+            {% if errors.get('email') %}
+                <div class="error">{{ errors['email'] }}</div>
+            {% endif %}
+            <br>
+            
+            <label for="password">Пароль:</label><br>
+            <input type="password" id="password" name="password" value="{{ password }}" autocomplete="off"><br>
+            {% if errors.get('password') %}
+                <div class="error">{{ errors['password'] }}</div>
+            {% endif %}
+            <br>
+            
+            {% if errors.get('general') %}
+                <div class="error">{{ errors['general'] }}</div>
+            {% endif %}
+            
+            <button type="submit">Регистрация</button>
+        </form>
+        
+        <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
+    </div>
+{% endblock %}
