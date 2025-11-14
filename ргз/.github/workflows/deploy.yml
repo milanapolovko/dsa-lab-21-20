@@ -38,7 +38,7 @@ jobs:
       - name: Generate changelog
         run: |
           chmod +x generate_changelog.sh
-          ./generate_changelog.sh v$(date +%Y%m%d%H%M%S)  # Auto-version with timestamp
+          ./generate_changelog.sh v$(date +%Y%m%d%H%M%S) 
 
       - name: Commit changelog
         run: |
@@ -64,9 +64,9 @@ jobs:
 
       - name: Create index.html with changelog
         run: |
-          echo "<!DOCTYPE html><html><head><title>Changelog</title></head><body><pre>" > docs/index.html
-          cat changelog.md >> docs/index.html
-          echo "</pre></body></html>" >> docs/index.html
+          echo "<!DOCTYPE html><html><head><title>Changelog</title></head><body><pre>" > templates/index.html
+          cat changelog.md >> templates/index.html
+          echo "</pre></body></html>" >> templates/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
