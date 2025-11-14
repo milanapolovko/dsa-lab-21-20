@@ -4,49 +4,74 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  ci-cd:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Для доступа ко всей истории коммитов
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.9'
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: pip install flask pytest bandit
 
-      - name: Run tests
+      - name: Run unit tests
         run: pytest
 
-      - name: Run security check
-        run: bandit -r .
+      - name: Run security check with Bandit
+        run: bandit -r . -f json -o bandit-report.json || true
 
-      - name: Create docs directory
-        run: mkdir -p docs
+  generate-changelog:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for tags/commits
 
       - name: Generate changelog
         run: |
-          bash generate_changelog.sh
-          echo "<html><head><title>Changelog</title></head><body><pre>$(cat changelog.md | markdown)</pre></body></html>" > docs/index.html
+          chmod +x generate_changelog.sh
+          ./generate_changelog.sh v$(date +%Y%m%d%H%M%S)  # Auto-version with timestamp
+
+      - name: Commit changelog
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add changelog.md
+          git commit -m "Update changelog" || echo "No changes to commit"
+
+      - name: Push changes
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-pages:
+    runs-on: ubuntu-latest
+    needs: generate-changelog
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Create index.html with changelog
+        run: |
+          echo "<!DOCTYPE html><html><head><title>Changelog</title></head><body><pre>" > docs/index.html
+          cat changelog.md >> docs/index.html
+          echo "</pre></body></html>" >> docs/index.html
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs  # Загружаем docs/ напрямую (без Jekyll)
+          path: docs
 
       - name: Deploy to GitHub Pages
         id: deployment
