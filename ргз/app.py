@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -45,6 +45,9 @@ def calculate_next_charge(start_date, frequency):
     # Возвращаем в строковом формате
     return next_date.strftime('%d %m %Y')
     
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 @app.route('/subscriptions', methods=['GET','POST'])
 def create_subscription():
