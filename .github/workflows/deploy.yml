@@ -20,6 +20,9 @@ jobs:
       - name: Install dependencies
         run: pip install flask pytest bandit
 
+      - name: List test files
+        run: find . -name "*test*.py" -o -name "*_test.py" || echo "No test files found"
+
       - name: Run unit tests
         run: pytest --verbose 
 
