@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление подписками</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        nav { margin-bottom: 20px; }
+        nav a { margin-right: 10px; text-decoration: none; padding: 5px 10px; background: #f0f0f0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        form { margin-top: 20px; }
+        input, button { margin: 5px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" onclick="showHome()">Главная</a>
+        <a href="#" onclick="showData()">Данные</a>
+        <a href="#" onclick="showForm()">Форма</a>
+    </nav>
+
+    <div id="home" class="page">
+        <h1>Главная</h1>
+        <p>Добро пожаловать в систему управления финансовыми подписками. Используйте навигацию для просмотра данных или добавления подписок.</p>
+    </div>
+
+    <div id="data" class="page hidden">
+        <h1>Данные подписок</h1>
+        <button onclick="loadSubscriptions()">Загрузить подписки</button>
+        <table id="subscriptionsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Сумма</th>
+                    <th>Период</th>
+                    <th>Дата начала</th>
+                    <th>Следующее списание</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="form" class="page hidden">
+        <h1>Форма подписки</h1>
+        <form id="subscriptionForm">
+            <input type="hidden" id="subId">
+            <label>Название: <input type="text" id="name" required></label><br>
+            <label>Сумма: <input type="number" step="0.01" id="amount" required></label><br>
+            <label>Период: <select id="period" required>
+                <option value="monthly">Ежемесячно</option>
+                <option value="yearly">Ежегодно</option>
+            </select></label><br>
+            <label>Дата начала: <input type="date" id="startDate" required></label><br>
+            <button type="submit">Сохранить</button>
+        </form>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:5000/subscriptions';
+
+        function showHome() { showPage('home'); }
+        function showData() { showPage('data'); }
+        function showForm() { showPage('form'); }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        async function loadSubscriptions() {
+            try {
+                const res = await fetch(API_URL);
+                const subs = await res.json();
+                const tbody = document.querySelector('#subscriptionsTable tbody');
+                tbody.innerHTML = '';
+                subs.forEach(sub => {
+                    const row = `<tr>
+                        <td>${sub.id}</td>
+                        <td>${sub.name}</td>
+                        <td>${sub.amount}</td>
+                        <td>${sub.period}</td>
+                        <td>${sub.start_date}</td>
+                        <td>${sub.next_charge}</td>
+                        <td>
+                            <button onclick="editSub('${sub.id}')">Редактировать</button>
+                            <button onclick="deleteSub('${sub.id}')">Удалить</button>
+                        </td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (e) { alert('Ошибка загрузки: ' + e.message); }
+        }
+
+        document.getElementById('subscriptionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('name').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                period: document.getElementById('period').value,
+                start_date: document.getElementById('startDate').value
+            };
+            const id = document.getElementById('subId').value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/${id}` : API_URL;
+            try {
+                await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                alert('Сохранено!');
+                loadSubscriptions();
+                showData();
+            } catch (e) { alert('Ошибка: ' + e.message); }
+        });
+
+        function editSub(id) {
+            fetch(`${API_URL}/${id}`).then(r => r.json()).then(sub => {
+                document.getElementById('subId').value = sub.id;
+                document.getElementById('name').value = sub.name;
+                document.getElementById('amount').value = sub.amount;
+                document.getElementById('period').value = sub.period;
+                document.getElementById('startDate').value = sub.start_date;
+                showForm();
+            });
+        }
+
+        async function deleteSub(id) {
+            if (confirm('Удалить?')) {
+                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                loadSubscriptions();
+            }
+        }
+    </script>
+</body>
+</html>
