@@ -42,7 +42,7 @@ jobs:
       - name: Generate changelog
         run: |
           chmod +x generate_changelog.sh
-          ./generate_changelog.sh latest 
+          ./generate_changelog.sh v1.1.0 
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
