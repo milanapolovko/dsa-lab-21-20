@@ -38,7 +38,7 @@ jobs:
       - name: Generate changelog
         run: |
           chmod +x generate_changelog.sh
-          ./generate_changelog.sh v$(date +%Y%m%d%H%M%S) 
+          ./generate_changelog.sh
 
       - name: Commit changelog
         run: |
@@ -48,7 +48,7 @@ jobs:
           git commit -m "Update changelog" || echo "No changes to commit"
 
       - name: Push changes
-        uses: actions-js/push@master
+        uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -64,14 +64,14 @@ jobs:
 
       - name: Create index.html with changelog
         run: |
-          echo "<!DOCTYPE html><html><head><title>Changelog</title></head><body><pre>" > dosc/index.html
+          echo "<!DOCTYPE html><html><head><title>Changelog</title></head><body><pre>" > docs/index.html
           cat changelog.md >> dosc/index.html
-          echo "</pre></body></html>" >> dosc/index.html
+          echo "</pre></body></html>" >> docs/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dosc
+          path: docs
 
       - name: Deploy to GitHub Pages
         id: deployment
