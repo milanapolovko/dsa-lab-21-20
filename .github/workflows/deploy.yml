@@ -20,9 +20,6 @@ jobs:
       - name: Install dependencies
         run: pip install flask flask-sqlalchemy pytest bandit python-dateutil
 
-      - name: List test files
-        run: find . -name "*test*.py" -o -name "*_test.py" || echo "No test files found"
-
       - name: Run unit tests
         run: pytest --verbose 
 
@@ -41,7 +38,7 @@ jobs:
       - name: Generate changelog
         run: |
           chmod +x generate_changelog.sh
-          ./generate_changelog.sh
+          ./generate_changelog.sh latest
 
       - name: Commit changelog
         run: |
