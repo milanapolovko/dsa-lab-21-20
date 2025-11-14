@@ -47,10 +47,11 @@ jobs:
           git add changelog.md
           git commit -m "Update changelog" || echo "No changes to commit"
 
-      - name: Push changes
+      - name: Commit changelog
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          commit_message: Update changelog
 
   deploy-pages:
     runs-on: ubuntu-latest
