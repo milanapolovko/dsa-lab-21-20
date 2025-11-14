@@ -65,8 +65,9 @@ jobs:
       - name: Create index.html with changelog
         run: |
           echo "<!DOCTYPE html><html><head><title>Changelog</title></head><body><pre>" > docs/index.html
-          cat changelog.md >> dosc/index.html
+          cat changelog.md >> docs/index.html  # Исправлено: docs вместо dosc
           echo "</pre></body></html>" >> docs/index.html
+
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
